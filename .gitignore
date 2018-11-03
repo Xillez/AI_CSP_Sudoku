@@ -1,4 +1,4 @@
-.zip
+*.zip
 sudokus/
-.vscode
-.vs
+.vscode/
+.vs/
