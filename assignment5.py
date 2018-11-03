@@ -109,8 +109,16 @@ class CSP:
         assignments and inferences that took place in previous
         iterations of the loop.
         """
-        # TODO: IMPLEMENT THIS
-        pass
+        
+        unassigned = self.select_unassigned_variable(assignment)
+
+        # Found a solution?
+        if unassigned == None:
+            return assignment       # Yes
+
+        newassign = copy.deepcopy(assignment)
+        for var in newassign[unassigned]:
+            for i, item
 
     def select_unassigned_variable(self, assignment):
         """The function 'Select-Unassigned-Variable' from the pseudocode
@@ -118,8 +126,10 @@ class CSP:
         in 'assignment' that have not yet been decided, i.e. whose list
         of legal values has a length greater than one.
         """
-        # TODO: IMPLEMENT THIS
-        pass
+        for key, value in assignment:
+            if len(value) > 1:
+                return key
+        return None
 
     def inference(self, assignment, queue):
         """The function 'AC-3' from the pseudocode in the textbook.
@@ -200,3 +210,6 @@ def print_sudoku_solution(solution):
         print
         if row == 2 or row == 5:
             print '------+-------+------'
+
+csp = create_map_coloring_csp()
+csp.backtracking_search()
