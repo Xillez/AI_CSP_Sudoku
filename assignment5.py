@@ -2,6 +2,10 @@
 
 import copy
 import itertools
+import pdb
+
+countFail = 0
+countCall = 0
 
 class CSP:
     def __init__(self):
@@ -109,6 +113,10 @@ class CSP:
         assignments and inferences that took place in previous
         iterations of the loop.
         """
+
+        global countCall
+        countCall = countCall + 1
+        global countFail
         
         unassigned = self.select_unassigned_variable(assignment)
 
@@ -116,9 +124,19 @@ class CSP:
         if unassigned == None:
             return assignment       # Yes
 
-        newassign = copy.deepcopy(assignment)
-        for var in newassign[unassigned]:
-            for i, item
+        for value in assignment[unassigned]:
+            newassign = copy.deepcopy(assignment)
+            if value not in self.constraints[unassigned]:
+                newassign[unassigned] = value
+                inference = self.inference(newassign, self.get_all_arcs())
+                if inference != False:
+                    result = self.backtrack(newassign)
+                    if result != None:
+                        return result
+            newassign[unassigned] = ""
+        countFail = countFail + 1
+        return None
+
 
     def select_unassigned_variable(self, assignment):
         """The function 'Select-Unassigned-Variable' from the pseudocode
@@ -126,7 +144,7 @@ class CSP:
         in 'assignment' that have not yet been decided, i.e. whose list
         of legal values has a length greater than one.
         """
-        for key, value in assignment:
+        for key, value in assignment.iteritems():
             if len(value) > 1:
                 return key
         return None
@@ -137,8 +155,14 @@ class CSP:
         the lists of legal values for each undecided variable. 'queue'
         is the initial queue of arcs that should be visited.
         """
-        # TODO: IMPLEMENT THIS
-        pass
+        while len(queue) > 0:
+            pair = queue.pop(0)
+            if self.revise(assignment, pair[0], pair[1]):
+                if len(assignment[pair[0]]) == 0:
+                    return False
+                for k in self.get_all_neighboring_arcs(pair[0]):
+                    queue.append(k)
+        return True
 
     def revise(self, assignment, i, j):
         """The function 'Revise' from the pseudocode in the textbook.
@@ -149,8 +173,19 @@ class CSP:
         between i and j, the value should be deleted from i's list of
         legal values in 'assignment'.
         """
-        # TODO: IMPLEMENT THIS
-        pass
+
+        revised = False
+        for x in assignment[i]:
+            value = False
+            for y in assignment[j]:
+                if (x, y) in self.constraints[i][j]:
+                    value = True
+                    break
+            if value == False:
+                #pdb.set_trace()
+                assignment[i].remove(x)
+                revised = True
+        return revised
 
 def create_map_coloring_csp():
     """Instantiate a CSP representing the map coloring problem from the
@@ -211,5 +246,29 @@ def print_sudoku_solution(solution):
         if row == 2 or row == 5:
             print '------+-------+------'
 
-csp = create_map_coloring_csp()
-csp.backtracking_search()
+#def print_map_solution(solution):
+#    for row in range(9):
+#        for col in range(9):
+#            value = solution['%d-%d' % (row, col)]
+#            if len(value) > 1:
+#                for x in range(0, len(value) - 1):
+#                    print value[x], "-",
+#            else:
+#                print value[0],
+#            
+#            if col == 2 or col == 5:
+#                print '|',
+#        print
+#        if row == 2 or row == 5:
+#            print '------+-------+------'
+
+puzzleName = "veryhard"
+csp = create_sudoku_csp("./sudokus/" + puzzleName + ".txt")
+print("Puzzle: " + puzzleName + ".txt")
+print("-----------------------")
+print_sudoku_solution(csp.backtracking_search())
+print("-----------------------")
+print("Nr backtrack calls: " + str(countCall))
+print("-----------------------")
+print("Nr backtrack fails: " + str(countFail))
+print("-----------------------")
